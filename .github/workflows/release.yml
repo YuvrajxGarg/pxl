@@ -1,0 +1,78 @@
+# Builds PXL for macOS and Windows when a version tag (v1.2.3) is pushed, and
+# attaches the apps to that GitHub release. Installed copies check the latest
+# release for updates:
+#   macOS   -> PXL-mac.zip      + .sha256
+#   Windows -> PXL-windows.zip  + .sha256
+#
+# Adding or changing apps does NOT need a release: PXL reads apps.json from main.
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing tag to (re)build, e.g. v1.2.0
+        required: true
+
+permissions:
+  contents: write
+
+env:
+  TAG: ${{ github.event.inputs.tag || github.ref_name }}
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Create the release if it doesn't exist
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release view "$TAG" >/dev/null 2>&1 || \
+            gh release create "$TAG" --title "PXL ${TAG#v}" --generate-notes --verify-tag
+
+  build:
+    needs: release
+    strategy:
+      matrix:
+        os: [macos-15, windows-latest]
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.TAG }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Set version from the tag
+        run: echo "${TAG#v}" > VERSION
+      - run: pip install pyinstaller -r requirements.txt
+      - run: python -m unittest discover tests
+      - run: pyinstaller --noconfirm --log-level WARN PXL.spec
+      - name: Package (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          cd dist
+          ditto -c -k --keepParent PXL.app PXL-mac.zip
+          shasum -a 256 PXL-mac.zip > PXL-mac.zip.sha256
+          cat PXL-mac.zip.sha256
+      - name: Package (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          cd dist
+          Compress-Archive -Path PXL -DestinationPath PXL-windows.zip
+          $h = (Get-FileHash PXL-windows.zip -Algorithm SHA256).Hash.ToLower()
+          "$h  PXL-windows.zip" | Out-File -Encoding ascii -NoNewline PXL-windows.zip.sha256
+          Get-Content PXL-windows.zip.sha256
+      - name: Upload to the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release upload "$TAG" dist/PXL-*.zip dist/PXL-*.zip.sha256 --clobber
+

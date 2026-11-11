@@ -1,0 +1,9 @@
+.venv/
+.venv-build/
+build/
+dist/
+__pycache__/
+*.pyc
+.DS_Store
+assets/*.iconset/
+.claude/

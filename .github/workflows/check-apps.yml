@@ -1,0 +1,22 @@
+# Checks apps.json whenever it changes: valid entries, unique three-letter ids, and
+# a latest release for each app that has the files apps.json says it does.
+name: Check apps
+
+on:
+  push:
+    paths: ['apps.json', 'tools/check_apps.py']
+  pull_request:
+    paths: ['apps.json', 'tools/check_apps.py']
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python tools/check_apps.py
+        env:
+          GITHUB_TOKEN: ${{ github.token }}

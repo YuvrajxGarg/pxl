@@ -1,0 +1,82 @@
+{
+  "schema": 1,
+  "apps": [
+    {
+      "id": "dwn",
+      "name": "Dwn",
+      "mark": { "text": "dwn", "glyph": "arrow" },
+      "tagline": "Download anything on the internet.",
+      "description": "Videos, songs, playlists and transcripts from YouTube, TikTok, Instagram, X, SoundCloud and over a thousand other sites, plus whole Google Drive and Dropbox folders without split zips. No accounts, no servers.",
+      "category": "Download",
+      "repo": "YuvrajxGarg/dwn",
+      "site": "https://dwn.pxlvzn.in",
+      "added": "2026-11-08",
+      "highlights": [
+        "Paste a link, pick a format, done",
+        "Up to 4K and 8K, MP3, WAV or a transcript",
+        "Whole cloud folders, never split zips",
+        "Quick-download panel from any app"
+      ],
+      "screenshots": [
+        "https://raw.githubusercontent.com/YuvrajxGarg/dwn/main/site/assets/links.png",
+        "https://raw.githubusercontent.com/YuvrajxGarg/dwn/main/site/assets/cloud.png"
+      ],
+      "platforms": {
+        "mac": {
+          "type": "app-zip",
+          "asset": "Dwn-mac.zip",
+          "checksum": "Dwn-mac.zip.sha256",
+          "bundle": "Dwn.app",
+          "bundle_id": "com.yuvrajgarg.dwn",
+          "min_os": "14.0",
+          "arch": "arm64"
+        },
+        "windows": {
+          "type": "nsis",
+          "asset": "Dwn-Setup-*.exe",
+          "display_name": "Dwn",
+          "exe": "Dwn.exe"
+        }
+      }
+    },
+    {
+      "id": "tag",
+      "name": "Tag",
+      "mark": { "text": "tag", "glyph": "strike" },
+      "tagline": "Take the AI tags off your photos and videos.",
+      "description": "Strips C2PA Content Credentials, “made with AI” labels and generator metadata from photos and videos. Lossless: nothing is re-encoded and your originals are never touched.",
+      "category": "Photo & video",
+      "repo": "YuvrajxGarg/tag",
+      "site": "https://github.com/YuvrajxGarg/tag",
+      "added": "2026-11-11",
+      "highlights": [
+        "Drop photos, videos or whole folders",
+        "See every AI and C2PA tag a file carries",
+        "Clean copies, every pixel untouched",
+        "Higgsfield, Firefly, OpenAI, Midjourney and more"
+      ],
+      "screenshots": [
+        "https://raw.githubusercontent.com/YuvrajxGarg/tag/main/docs/screenshot-scan.png",
+        "https://raw.githubusercontent.com/YuvrajxGarg/tag/main/docs/screenshot-clean.png"
+      ],
+      "platforms": {
+        "mac": {
+          "type": "app-zip",
+          "asset": "Tag-mac.zip",
+          "checksum": "Tag-mac.zip.sha256",
+          "bundle": "Tag.app",
+          "bundle_id": "com.yuvrajgarg.tag",
+          "min_os": "11.0",
+          "arch": "arm64"
+        },
+        "windows": {
+          "type": "folder-zip",
+          "asset": "Tag-windows.zip",
+          "checksum": "Tag-windows.zip.sha256",
+          "folder": "Tag",
+          "exe": "Tag.exe"
+        }
+      }
+    }
+  ]
+}

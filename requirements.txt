@@ -1,0 +1,4 @@
+# App window (WebKit on macOS, Edge WebView2 on Windows)
+pywebview>=5.0
+# Trusted certificates for GitHub requests in the packaged app
+certifi
