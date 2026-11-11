@@ -226,9 +226,17 @@ def _win_find_nsis(spec):
     for e in _win_uninstall_entries():
         name = e.get("DisplayName") or ""
         if name == want or name.startswith(want + " "):
-            loc = e.get("InstallLocation") or ""
-            exe = os.path.join(loc, spec["exe"]) if loc else (e.get("DisplayIcon") or "").split(",")[0].strip('"')
-            return {"path": loc or os.path.dirname(exe), "exe": exe, "version": e.get("DisplayVersion") or "",
+            # Not every installer records InstallLocation (electron-builder doesn't), so fall back
+            # to the folder of the uninstaller or the icon, and always point at the app's own exe.
+            loc = (e.get("InstallLocation") or "").strip('"')
+            if not loc:
+                for key in ("UninstallString", "DisplayIcon"):
+                    v = (e.get(key) or "").strip()
+                    v = v[1:].split('"', 1)[0] if v.startswith('"') else v.split(",")[0].split(" /")[0]
+                    if v:
+                        loc = os.path.dirname(v)
+                        break
+            return {"path": loc, "exe": os.path.join(loc, spec["exe"]) if loc else "", "version": e.get("DisplayVersion") or "",
                     "uninstall": e.get("QuietUninstallString") or e.get("UninstallString")}
     return None
 
