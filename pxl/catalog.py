@@ -9,6 +9,7 @@
 """
 
 import copy
+import re
 import fnmatch
 import json
 import os
@@ -133,9 +134,15 @@ class Catalog(object):
             if entry.get("data"):
                 return entry["data"]
             raise NetError("Couldn't reach GitHub. Check your connection.")
+        tag = obj.get("tag_name") or ""
+        old = entry.get("data") or {}
+        if old.get("version") == tag.lstrip("vV") and old.get("notes") and entry.get("repo") == repo:
+            notes = old["notes"]  # already filled in for this version
+        else:
+            notes = release_notes(repo, tag, obj.get("body") or "")
         data = {
-            "version": (obj.get("tag_name") or "").lstrip("vV"),
-            "notes": obj.get("body") or "",
+            "version": tag.lstrip("vV"),
+            "notes": notes,
             "page": obj.get("html_url") or "https://github.com/%s/releases" % repo,
             "published": obj.get("published_at"),
             "assets": {a.get("name"): {"url": a.get("browser_download_url"), "size": a.get("size") or 0}
@@ -171,6 +178,49 @@ class Catalog(object):
             self.cache["releases"][app["id"]] = {"repo": repo, "etag": None, "data": data}
             self._save()
         return data
+
+
+_SKIP_SUBJECT = re.compile(r"^(website|site|docs?|readme)\b", re.I)
+_TRAILER = re.compile(r"^(co-authored-by|signed-off-by|reviewed-by):", re.I)
+
+
+def notes_are_empty(body):
+    """True when a release body is only GitHub's generated boilerplate (a changelog link)."""
+    for line in (body or "").splitlines():
+        s = line.strip().strip("*#- ").strip()
+        if not s or s.lower().startswith(("full changelog", "what's changed", "new contributors")):
+            continue
+        return False
+    return True
+
+
+def _clean_message(msg):
+    lines = [l.rstrip() for l in (msg or "").strip().splitlines() if not _TRAILER.match(l.strip())]
+    while lines and not lines[-1].strip():
+        lines.pop()
+    return "\n".join(lines)
+
+
+def release_notes(repo, tag, body):
+    """The release body, or, when it's only a changelog link, the commit messages since the
+    previous release (the way Dwn and Tag are released: detailed commits, generated notes)."""
+    if not notes_are_empty(body):
+        return body
+    try:
+        m = re.search(r"/compare/([^\s)]+?)\.\.\.([^\s)]+)", body or "")
+        if m:
+            with request("%s/repos/%s/compare/%s...%s" % (GITHUB_API, repo, m.group(1), m.group(2))) as r:
+                commits = [c.get("commit", {}).get("message", "") for c in json.loads(r.read().decode("utf-8")).get("commits", [])]
+            commits.reverse()  # newest first
+        else:
+            with request("%s/repos/%s/commits/%s" % (GITHUB_API, repo, tag)) as r:
+                commits = [json.loads(r.read().decode("utf-8")).get("commit", {}).get("message", "")]
+    except Exception as e:
+        log("notes for %s %s: %s" % (repo, tag, e))
+        return body
+    parts = [_clean_message(c) for c in commits if c and not _SKIP_SUBJECT.match(c.strip())]
+    parts = [p for p in parts if p][:8]
+    return "\n\n".join(parts) if parts else body
 
 
 def platform_spec(app):

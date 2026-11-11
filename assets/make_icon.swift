@@ -12,9 +12,11 @@ func drawMark(_ cg: CGContext, x: CGFloat, baseline: CGFloat, size: CGFloat, col
     let font = NSFont.systemFont(ofSize: size, weight: .black)
     let attrs: [NSAttributedString.Key: Any] = [.font: font, .kern: -size * 0.055, .foregroundColor: NSColor(cgColor: color)!]
     let line = CTLineCreateWithAttributedString(NSAttributedString(string: "pxl", attributes: attrs))
-    let textW = CGFloat(CTLineGetTypographicBounds(line, nil, nil, nil)) - size * 0.055
+    // Measure the ink, not the advance: the negative kerning makes the advance end
+    // inside the "l", which put the pixel on top of it.
+    let textW = CTLineGetBoundsWithOptions(line, .useGlyphPathBounds).maxX
     let px = size * 0.19
-    let gap = size * 0.06
+    let gap = size * 0.07
     let total = textW + gap + px
     guard draw else { return total }
     cg.textPosition = CGPoint(x: x, y: baseline)

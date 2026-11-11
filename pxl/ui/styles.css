@@ -258,3 +258,18 @@ body.win .topbar { padding-right: 18px; }
 #welcome .motto span { color: var(--text2); font-weight: 300; }
 #welcome .motto b { display: block; font-weight: 700; color: var(--text); }
 #welcome .motto + .lead { font-size: 13.5px; color: var(--text3); }
+
+/* Release notes, rendered from markdown or commit messages. */
+.notes.rich { white-space: normal; user-select: text; -webkit-user-select: text; }
+.notes.rich h4 { font: 650 13.5px/1.4 var(--font-display); color: var(--text); margin: 0 0 8px; }
+.notes.rich h4 + * { margin-top: 0; }
+.notes.rich h5 { font: 600 10.5px/1 var(--font); letter-spacing: .07em; text-transform: uppercase; color: var(--accent); margin: 14px 0 6px; }
+.notes.rich p { margin: 6px 0; }
+.notes.rich ul { list-style: none; margin: 4px 0; display: flex; flex-direction: column; gap: 5px; }
+.notes.rich li { position: relative; padding-left: 14px; }
+.notes.rich li::before { content: ""; position: absolute; left: 1px; top: .55em; width: 5px; height: 5px; background: var(--text3); }
+.notes.rich h4 ~ h4 { margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--stroke); }
+.notes.rich code { font: 500 11.5px ui-monospace, "SF Mono", Menlo, monospace; background: var(--fill); padding: 1px 5px; border-radius: 5px; }
+.d-notes .notes.rich { max-height: none; }
+.d-links .link { display: inline-flex; align-items: center; gap: 6px; }
+.d-links .link svg.i { width: 13px; height: 13px; }

@@ -189,7 +189,44 @@
       ${mode === 'installed' && a.status === 'update' ? actBtn(a) : mode === 'installed' && !a.job ? `<button class="act open" data-a="open">Open</button>` : actBtn(a)}
     </div>`;
   }
-  const firstNote = (n) => String(n || '').split('\n').map((l) => l.replace(/^[#*\-\s]+/, '').trim()).filter((l) => l && !/^(what's changed|full changelog)/i.test(l))[0] || '';
+  // "Dwn 1.1.0: Cloud on Windows, …" → "Cloud on Windows, …"
+  const dropVersionPrefix = (l) => l.replace(/^[\w .-]{1,24}\bv?\d+(\.\d+)+\s*[:—–-]\s*/, '');
+  const isBoilerplate = (l) => /^(what's changed|full changelog|new contributors)/i.test(l.replace(/^[#*\-\s]+/, '').trim());
+  const firstNote = (n) => {
+    const l = String(n || '').split('\n').map((x) => x.replace(/^[#*\-\s]+/, '').trim()).filter((x) => x && !isBoilerplate(x))[0] || '';
+    return dropVersionPrefix(l);
+  };
+
+  // Release notes → HTML. Handles GitHub markdown and plain commit messages: a summary
+  // line, short section names ("Windows"), "- " bullets with hard-wrapped continuation lines.
+  function notesHTML(text) {
+    const inline = (s) => esc(s).replace(/\*\*(.+?)\*\*/g, '<b>$1</b>').replace(/`([^`]+)`/g, '<code>$1</code>')
+      .replace(/\[([^\]]+)\]\((https?:[^)]+)\)/g, '$1');
+    const out = [];
+    let list = null, para = null;
+    const flush = () => {
+      if (list) out.push(`<ul>${list.map((li) => `<li>${inline(li)}</li>`).join('')}</ul>`);
+      if (para) out.push(`<p>${inline(para)}</p>`);
+      list = para = null;
+    };
+    String(text || '').split(/\n\s*\n/).forEach((block) => {
+      const lines = block.split('\n').filter((l) => l.trim() && !isBoilerplate(l));
+      lines.forEach((raw, i) => {
+        const l = raw.trim();
+        const bullet = /^[-*•]\s+/.test(l);
+        if (bullet) { if (para) flush(); (list = list || []).push(l.replace(/^[-*•]\s+/, '')); return; }
+        if (list && /^\s/.test(raw)) { list[list.length - 1] += ' ' + l; return; } // wrapped bullet
+        if (/^#{1,6}\s/.test(l) || (l.length <= 28 && !/[.:,]$/.test(l) && i < lines.length - 1)) {
+          flush(); out.push(`<h5>${inline(l.replace(/^#+\s*/, ''))}</h5>`); return;
+        }
+        if (i === 0 && /\bv?\d+(\.\d+)+\s*[:—–-]/.test(l)) { flush(); out.push(`<h4>${inline(dropVersionPrefix(l))}</h4>`); return; }
+        if (list) flush();
+        para = para ? para + ' ' + l : l;
+      });
+      flush();
+    });
+    return out.join('') || `<p>${esc(String(text || '').trim())}</p>`;
+  }
   const tilde = (p) => (info.home && p && p.startsWith(info.home) ? '~' + p.slice(info.home.length) : p);
 
   function installedHTML(rows) {
@@ -263,7 +300,7 @@
             <div><span class="k">Source</span><button class="v" data-a="url" data-url="https://github.com/${esc(a.repo)}">${esc(a.repo)}</button></div>
           </div>
         </div>
-        ${a.notes ? `<div class="d-notes"><div class="label" style="margin:22px 2px 8px">What's new in ${esc(a.latest)}</div><div class="notes">${esc(a.notes.trim())}</div></div>` : ''}
+        ${a.notes ? `<div class="d-notes"><div class="label" style="margin:22px 2px 8px">What's new in ${esc(a.latest)}</div><div class="notes rich">${notesHTML(a.notes)}</div></div>` : ''}
         ${a.error ? `<div class="label" style="margin-top:16px;color:var(--warn)">${esc(a.error)}</div>` : ''}
         <div class="d-links">
           <button class="link" data-a="url" data-url="${esc(a.page)}">${icon('github')} Release notes</button>
@@ -452,7 +489,7 @@
     showModal('update', `
       <div class="update-hero">${pxlTile('lg')}<div><h2>${upd.latest ? 'PXL ' + esc(upd.latest) : 'Updates'}</h2><p>${sub}</p></div></div>
       ${ph === 'downloading' ? `<div class="progress"><div style="width:${pct}%"></div></div>` : ''}
-      ${upd.notes ? `<div class="label">What's new</div><div class="notes">${esc(upd.notes)}</div>` : ''}
+      ${upd.notes ? `<div class="label">What's new</div><div class="notes rich">${notesHTML(upd.notes)}</div>` : ''}
       <div class="foot"><button class="link" data-m="page">View on GitHub</button><button class="btn-quiet" data-m="close">Later</button>${primary}</div>`,
       (m) => {
         if (m === 'close') closeModal();
@@ -693,7 +730,7 @@
         highlights: ['Paste a link, pick a format, done', 'Up to 4K and 8K, MP3, WAV or a transcript', 'Whole cloud folders, never split zips', 'Quick-download panel from any app'],
         screenshots: ['https://raw.githubusercontent.com/YuvrajxGarg/dwn/main/site/assets/links.png', 'https://raw.githubusercontent.com/YuvrajxGarg/dwn/main/site/assets/cloud.png'],
         platforms: ['mac', 'windows'], installed: true, installed_version: '1.0.9', latest: '1.1.0', size: '117.3 MB', status: 'update', path: '/Applications/Dwn.app',
-        notes: '- Cloud on Windows\n- A download-finished panel\n- Restarts after updates', page: 'https://github.com/YuvrajxGarg/dwn/releases', published: '2026-11-11T18:44:11Z' },
+        notes: 'Dwn 1.1.0: Cloud on Windows, download-finished panel, restart after updates\n\nWindows\n- Cloud tab, matching the Mac: accounts, Shared with me by person, Shared\n  links, two-pane drag and drop and transfers.\n- Installer ends on a "Dwn is installed" page; updates stay silent.\n\nBoth\n- "Download finished" panel with files you can drag into other apps,\n  and a finish sound.\n- Cloud step in the first-run tour.\n\nMac\n- Dwn reopens after every update and brings its window forward.', page: 'https://github.com/YuvrajxGarg/dwn/releases', published: '2026-11-11T18:44:11Z' },
       { id: 'tag', name: 'Tag', mark: { text: 'tag', glyph: 'strike' }, tagline: 'Take the AI tags off your photos and videos.', category: 'Photo & video', repo: 'YuvrajxGarg/tag', added: '2026-11-11',
         description: 'Strips C2PA Content Credentials, “made with AI” labels and generator metadata from photos and videos. Lossless: nothing is re-encoded and your originals are never touched.',
         highlights: ['Drop photos, videos or whole folders', 'See every AI and C2PA tag a file carries', 'Clean copies, every pixel untouched'],
