@@ -34,7 +34,7 @@ class Versions(unittest.TestCase):
 
 class Registry(unittest.TestCase):
     def test_apps_json_is_valid(self):
-        reg = json.loads((ROOT / "apps.json").read_text())
+        reg = json.loads((ROOT / "apps.json").read_text(encoding="utf-8"))
         self.assertEqual(check_apps.problems(reg), [])
 
     def test_checker_catches_mistakes(self):
