@@ -81,7 +81,7 @@
     {
       "id": "lut",
       "name": "Lut",
-      "mark": { "text": "lut", "glyph": "pixel" },
+      "mark": { "text": "lut", "glyph": "wipe" },
       "tagline": "Match the colour of one shot to another.",
       "description": "Drop a reference with the look you want and the clips to grade. Lut matches white balance, saturation and contrast, then hands you a .cube LUT for Resolve, Premiere or Final Cut plus a graded copy. Runs on your computer; originals are never touched.",
       "category": "Photo & video",

@@ -40,7 +40,7 @@ Every app is one entry in [`apps.json`](apps.json). Push it to `main` and it app
 {
   "id": "xyz",                                  // short lowercase id
   "name": "Xyz",
-  "mark": { "text": "xyz", "glyph": "pixel" },  // the tile: arrow (Dwn), strike (Tag), pixel, or none
+  "mark": { "text": "xyz", "glyph": "pixel" },  // the tile: arrow (Dwn), strike (Tag), wipe (Lut), pixel, or none
   "tagline": "One line that says what it does.",
   "description": "A short paragraph for the details page.",
   "category": "Video",
