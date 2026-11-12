@@ -44,7 +44,8 @@
     const text = esc(m.text || '');
     const glyph = m.glyph === 'strike' ? '<i class="strike"></i>' : m.glyph === 'arrow' ? ARROW : m.glyph === 'go' ? GO :
       m.glyph === 'pixel' ? '<span class="px solo"></span>' :
-      m.glyph === 'wipe' ? `<span class="graded" aria-hidden="true">${text}</span><i class="wipe"></i>` : '';
+      m.glyph === 'wipe' ? `<span class="graded" aria-hidden="true">${text}</span><i class="wipe"></i>` :
+      m.glyph === 'tracks' ? '<i class="bars"><b></b><b></b><b></b><b></b></i>' : '';
     return `<span class="mark ${glyph ? '' : 'plain'} ${m.glyph === 'wipe' ? 'wiped' : ''}" style="--size:${size}">${text}${glyph}</span>`;
   }
   function tile(a, cls) {
@@ -739,6 +740,12 @@
         screenshots: ['https://raw.githubusercontent.com/YuvrajxGarg/tag/main/docs/screenshot-scan.png', 'https://raw.githubusercontent.com/YuvrajxGarg/tag/main/docs/screenshot-clean.png'],
         platforms: ['mac', 'windows'], installed: false, installed_version: '', latest: '1.0.0', size: '35.9 MB', status: 'get', new: q.includes('new'),
         notes: 'First release.', page: 'https://github.com/YuvrajxGarg/tag/releases', published: '2026-11-11T16:23:32Z' },
+      { id: 'stm', name: 'Stm', mark: { text: 'stm', glyph: 'tracks' }, tagline: 'Split any song into vocals, drums, bass and other.', category: 'Music', repo: 'YuvrajxGarg/stm', site: 'https://stm.pxlvzn.in', added: '2026-11-12',
+        description: 'Drop in songs and Stm separates them into vocals, drums, bass and other with the htdemucs model, on your Mac\'s Neural Engine or your PC\'s GPU. Runs on your computer; nothing is uploaded.',
+        highlights: ['Drop songs or whole folders', 'Vocals, drums, bass and other, or a karaoke split', 'Runs on the Neural Engine or your GPU', 'WAV, FLAC or MP3 out, originals untouched'],
+        screenshots: ['https://raw.githubusercontent.com/YuvrajxGarg/stm/main/docs/screenshot-stems.png', 'https://raw.githubusercontent.com/YuvrajxGarg/stm/main/docs/screenshot-songs.png'],
+        platforms: ['mac', 'windows'], installed: false, installed_version: '', latest: '1.0.0', size: '190 MB', status: 'get', new: true,
+        notes: 'First release.', page: 'https://github.com/YuvrajxGarg/stm/releases', published: '2026-11-12T09:00:00Z' },
     ];
     reg.forEach((r) => { r.job = null; r.error = null; r.reason = null; r.new = !!r.new; });
     const pub = (r) => JSON.parse(JSON.stringify(r));
