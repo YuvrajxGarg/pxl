@@ -45,7 +45,8 @@
     const glyph = m.glyph === 'strike' ? '<i class="strike"></i>' : m.glyph === 'arrow' ? ARROW : m.glyph === 'go' ? GO :
       m.glyph === 'pixel' ? '<span class="px solo"></span>' :
       m.glyph === 'wipe' ? `<span class="graded" aria-hidden="true">${text}</span><i class="wipe"></i>` :
-      m.glyph === 'tracks' ? '<i class="bars"><b></b><b></b><b></b><b></b></i>' : '';
+      m.glyph === 'tracks' ? '<i class="bars"><b></b><b></b><b></b><b></b></i>' :
+      m.glyph === 'sync' ? '<i class="sync"><b></b><i></i><b></b></i>' : '';
     return `<span class="mark ${glyph ? '' : 'plain'} ${m.glyph === 'wipe' ? 'wiped' : ''}" style="--size:${size}">${text}${glyph}</span>`;
   }
   function tile(a, cls) {
@@ -770,6 +771,12 @@
         screenshots: ['https://raw.githubusercontent.com/YuvrajxGarg/stm/main/docs/screenshot-stems.png', 'https://raw.githubusercontent.com/YuvrajxGarg/stm/main/docs/screenshot-songs.png'],
         platforms: ['mac', 'windows'], installed: false, installed_version: '', latest: '1.0.0', size: '190 MB', status: 'get', new: true,
         notes: 'First release.', page: 'https://github.com/YuvrajxGarg/stm/releases', published: '2026-11-12T09:00:00Z' },
+      { id: 'syn', name: 'Syn', mark: { text: 'syn', glyph: 'sync' }, tagline: 'Sync every camera and recorder by sound.', category: 'Video', repo: 'YuvrajxGarg/syn', site: 'https://syn.pxlvzn.in', added: '2026-11-12',
+        description: 'Drop a Premiere XML or the footage itself and SYN lines every clip up by its sound, with a confidence score on each one. Send the synced sequence straight back to Premiere Pro with the SYN panel. Built for 20 cameras and 20 recorders.',
+        highlights: ['Premiere XML in, synced sequence out', 'A confidence score on every clip', 'Premiere Pro panel included', 'Flags recorders with clock drift'],
+        screenshots: ['https://raw.githubusercontent.com/YuvrajxGarg/syn/main/docs/screenshot.png'],
+        platforms: ['mac', 'windows'], installed: false, installed_version: '', latest: '1.0.0', size: '80 MB', status: 'get', new: true,
+        notes: 'First release.', page: 'https://github.com/YuvrajxGarg/syn/releases', published: '2026-11-12T14:00:00Z' },
     ];
     reg.forEach((r) => { r.job = null; r.error = null; r.reason = null; r.new = !!r.new; });
     const pub = (r) => JSON.parse(JSON.stringify(r));

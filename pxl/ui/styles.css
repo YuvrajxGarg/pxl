@@ -25,6 +25,12 @@
 .mark .bars b:nth-child(2) { width: 60%; }
 .mark .bars b:nth-child(3) { width: 85%; }
 .mark .bars b:nth-child(4) { width: 42%; }
+/* Syn: two lime dots joined by a line, from the baseline to the x-height */
+.mark .sync { display: inline-block; position: relative; width: .17em; height: 1ex; margin-left: .09em; vertical-align: baseline; }
+.mark .sync b { position: absolute; left: 0; width: .17em; height: .17em; border-radius: 50%; background: var(--accent); }
+.mark .sync b:first-child { top: 0; }
+.mark .sync b:last-child { bottom: 0; }
+.mark .sync i { position: absolute; left: 50%; top: .085em; bottom: .085em; width: .062em; margin-left: -.031em; border-radius: .031em; background: var(--accent); }
 
 /* App tiles: the same tile as the Dwn and Tag icons, at any size. */
 .tile { --t: 56px; width: var(--t); height: var(--t); border-radius: calc(var(--t) * .245); flex: none; display: flex; align-items: center;

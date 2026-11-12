@@ -41,8 +41,8 @@ def problems(reg):
         if a.get("repo") and not re.fullmatch(r"[\w.-]+/[\w.-]+", a["repo"]):
             out.append("%s: repo should look like owner/name" % where)
         glyph = (a.get("mark") or {}).get("glyph")
-        if glyph not in (None, "", "arrow", "strike", "pixel", "wipe", "tracks", "go"):
-            out.append("%s: mark.glyph must be arrow, strike, pixel, wipe, tracks, go or empty" % where)
+        if glyph not in (None, "", "arrow", "strike", "pixel", "wipe", "tracks", "go", "sync"):
+            out.append("%s: mark.glyph must be arrow, strike, pixel, wipe, tracks, go, sync or empty" % where)
         for plat, spec in (a.get("platforms") or {}).items():
             if plat not in TYPES:
                 out.append("%s: unknown platform %r (use mac or windows)" % (where, plat))
