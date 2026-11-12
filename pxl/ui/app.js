@@ -136,12 +136,13 @@
 
   function renderLibrary(installed) {
     const lib = $('#library');
-    if (!installed.length) { lib.innerHTML = '<div class="lib-empty">Apps you install show up here, one click from opening.</div>'; return; }
-    lib.innerHTML = installed.sort((x, y) => x.name.localeCompare(y.name)).map((a) => `
+    // Job progress calls this many times a second; only touch the sidebar when it actually changes, or its rows fade in again.
+    const html = !installed.length ? '<div class="lib-empty">Apps you install show up here, one click from opening.</div>' : installed.sort((x, y) => x.name.localeCompare(y.name)).map((a) => `
       <button class="lib-row" data-id="${esc(a.id)}" data-a="open-lib" title="Open ${esc(a.name)}">
         ${tile(a, 'sm')}<div class="t"><b>${esc(a.name)}</b><span>${a.job ? (PHASE[a.job.phase] || 'Updating') + '…' : 'v' + esc(a.installed_version)}</span></div>
         ${a.status === 'update' ? '<i class="dot-upd" title="Update available"></i>' : ''}<span class="go">Open</span>
       </button>`).join('');
+    if (lib.dataset.html !== html) { lib.innerHTML = html; lib.dataset.html = html; }
   }
 
   function cardHTML(a, i) {
@@ -396,8 +397,15 @@
 
   function closeModal() { $('#modal-root').innerHTML = ''; modal = null; }
   function showModal(name, html, onClick, cls) {
+    const box = modal === name && $('#modal-root .modal');
     modal = name;
-    $('#modal-root').innerHTML = `<div class="modal-back"><div class="modal ${cls || ''}">${html}</div></div>`;
+    if (box) {
+      // Same dialog again: swap what's inside so the dark backdrop doesn't fade in again (that read as the window blinking).
+      box.className = `modal ${cls || ''}`;
+      box.innerHTML = html;
+    } else {
+      $('#modal-root').innerHTML = `<div class="modal-back"><div class="modal ${cls || ''}">${html}</div></div>`;
+    }
     $('#modal-root .modal-back').onclick = (e) => {
       if (e.target.classList.contains('modal-back')) return closeModal();
       const el = e.target.closest('[data-m]');
@@ -479,6 +487,17 @@
       upd.phase === 'downloading' ? `${icon('download')}Updating ${Math.round(upd.progress * 100)}%` :
       upd.phase === 'installing' ? `${icon('refresh')}Installing…` : `${icon('download')}Update to ${esc(upd.latest)}`;
   }
+  // Progress ticks arrive several times a second: only the bar and its line change.
+  function patchUpdateProgress() {
+    const bar = $('#modal-root .progress > div');
+    const line = $('#modal-root .update-hero p');
+    if (!bar || !line) return false;
+    const pct = Math.round((upd.progress || 0) * 100);
+    bar.style.width = pct + '%';
+    line.textContent = `Downloading… ${pct}%`;
+    return true;
+  }
+
   function openUpdate() {
     if (!upd) return;
     const ph = upd.phase;
@@ -692,9 +711,14 @@
         const prev = upd && upd.phase;
         upd = p;
         renderPill();
-        if (modal === 'update') openUpdate();
+        if (modal === 'update' && !(prev === 'downloading' && p.phase === 'downloading' && patchUpdateProgress())) openUpdate();
         else if (modal === 'settings') renderUpdateRow();
-        if (view === 'updates') render();
+        if (view === 'updates') {
+          // Mid-download only the percentage on PXL's own row changes; rebuilding the view replays every row's fade-in.
+          const btn = prev === 'downloading' && p.phase === 'downloading' && $('#view .act[data-a="pxl-update"]');
+          if (btn) btn.textContent = Math.round(p.progress * 100) + '%';
+          else render();
+        }
         if (prev !== 'ready' && p.phase === 'ready' && modal !== 'update')
           toast(`PXL ${p.latest} is ready`, false, { label: 'Restart', run: () => api.install_update() });
       }
