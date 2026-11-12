@@ -241,6 +241,18 @@ def _win_find_nsis(spec):
     return None
 
 
+def _win_setup_uninstaller(spec):
+    """The uninstaller registered by the app's setup wizard (its installer/windows.iss), or None."""
+    try:
+        import winreg
+
+        path = r"Software\Microsoft\Windows\CurrentVersion\Uninstall\PXLVZN.%s_is1" % spec["folder"]
+        with winreg.OpenKey(winreg.HKEY_CURRENT_USER, path) as k:
+            return winreg.QueryValueEx(k, "UninstallString")[0] or None
+    except Exception:
+        return None
+
+
 def _win_folder_root(spec):
     return os.path.join(_programs_dir(), spec["folder"])
 
@@ -408,7 +420,18 @@ def uninstall(app, spec):
     if PLATFORM == "mac":
         _mac_trash(found["path"])
     elif t == "folder-zip":
-        shutil.rmtree(found["path"])
+        # Installed with the app's own setup wizard: let its uninstaller remove the
+        # shortcuts and the Settings > Apps entry too.
+        cmd = _win_setup_uninstaller(spec)
+        if cmd:
+            subprocess.run(cmd + " /VERYSILENT /SUPPRESSMSGBOXES /NORESTART", shell=True, timeout=600,
+                           creationflags=NO_WINDOW)
+            for _ in range(80):  # it finishes in a copy of itself after this one exits
+                if not os.path.exists(found["path"]):
+                    break
+                time.sleep(0.25)
+        if os.path.exists(found["path"]):
+            shutil.rmtree(found["path"])
         try:
             os.remove(os.path.join(_start_menu(), app["name"] + ".lnk"))
         except OSError:

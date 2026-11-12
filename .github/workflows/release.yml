@@ -1,6 +1,10 @@
 # Builds PXL for macOS and Windows when a version tag (v1.2.3) is pushed, and
 # attaches the apps to that GitHub release. Installed copies check the latest
 # release for updates:
+# What people download (installer/ builds these):
+#   macOS   -> PXL.dmg          (drag to Applications)
+#   Windows -> PXL-Setup.exe    (setup wizard)
+# What installed copies update from (keep these: every existing install uses them):
 #   macOS   -> PXL-mac.zip      + .sha256
 #   Windows -> PXL-windows.zip  + .sha256
 #
@@ -64,6 +68,9 @@ jobs:
           ditto -c -k --keepParent PXL.app PXL-mac.zip
           shasum -a 256 PXL-mac.zip > PXL-mac.zip.sha256
           cat PXL-mac.zip.sha256
+      - name: Disk image (macOS)
+        if: runner.os == 'macOS'
+        run: installer/build_mac.sh PXL && installer/test_mac.sh PXL
       - name: Package (Windows)
         if: runner.os == 'Windows'
         shell: pwsh
@@ -73,10 +80,19 @@ jobs:
           $h = (Get-FileHash PXL-windows.zip -Algorithm SHA256).Hash.ToLower()
           "$h  PXL-windows.zip" | Out-File -Encoding ascii -NoNewline PXL-windows.zip.sha256
           Get-Content PXL-windows.zip.sha256
+      - name: Setup wizard (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          installer/build_windows.ps1 -App PXL -Version $env:TAG -Url https://pxlvzn.in
+          installer/test_windows.ps1 -App PXL
       - name: Upload to the release
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release upload "$TAG" dist/PXL-*.zip dist/PXL-*.zip.sha256 --clobber
+        run: |
+          if [ "$RUNNER_OS" = "macOS" ]; then files="dist/PXL-mac.zip* dist/PXL.dmg*"
+          else files="dist/PXL-windows.zip* dist/PXL-Setup.exe*"; fi
+          gh release upload "$TAG" $files --clobber
 
   publish:
     needs: [build]
@@ -89,7 +105,7 @@ jobs:
         run: |
           assets=$(gh release view "$TAG" --json assets -q '.assets[].name')
           echo "$assets"
-          for a in PXL-mac.zip PXL-mac.zip.sha256 PXL-windows.zip PXL-windows.zip.sha256; do
+          for a in PXL-mac.zip PXL-mac.zip.sha256 PXL-windows.zip PXL-windows.zip.sha256 PXL.dmg PXL-Setup.exe; do
             echo "$assets" | grep -qx "$a" || { echo "missing $a, leaving the release as a draft"; exit 1; }
           done
           gh release edit "$TAG" --draft=false --latest

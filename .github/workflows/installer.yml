@@ -1,0 +1,43 @@
+# Checks the installers on pull requests that touch them: builds the app, the
+# Windows setup wizard and the macOS disk image, installs and uninstalls the
+# setup, and keeps both as downloadable artifacts. Releases build them in release.yml.
+name: Installer
+
+on:
+  pull_request:
+    paths: [installer/**, .github/workflows/installer.yml, .github/workflows/release.yml, PXL.spec]
+  workflow_dispatch:
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-15, windows-latest]
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install pyinstaller -r requirements.txt
+      - run: pyinstaller --noconfirm --log-level WARN PXL.spec
+      - name: Disk image (macOS)
+        if: runner.os == 'macOS'
+        run: installer/build_mac.sh PXL && installer/test_mac.sh PXL
+      - name: Setup wizard (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          installer/build_windows.ps1 -App PXL -Version "$(Get-Content VERSION)" -Url https://pxlvzn.in
+          installer/test_windows.ps1 -App PXL
+      - uses: actions/upload-artifact@v4
+        with:
+          name: PXL-${{ runner.os }}
+          path: |
+            dist/PXL.dmg
+            dist/PXL-Setup.exe
+          if-no-files-found: error

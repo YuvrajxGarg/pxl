@@ -20,8 +20,8 @@
 
 | Platform | Download | First launch |
 |---|---|---|
-| **macOS** 11+ | [**PXL-mac.zip**](https://github.com/YuvrajxGarg/pxl/releases/latest/download/PXL-mac.zip) | Unzip and move **PXL** to Applications. It isn't notarized, so the first time: right-click → **Open** (on macOS 15+, **System Settings → Privacy & Security → Open Anyway**). |
-| **Windows** 10 / 11 · 64-bit | [**PXL-windows.zip**](https://github.com/YuvrajxGarg/pxl/releases/latest/download/PXL-windows.zip) | Unzip the **PXL** folder somewhere you own and run **PXL.exe**. If SmartScreen appears: **More info → Run anyway**. |
+| **macOS** 11+ | [**PXL.dmg**](https://github.com/YuvrajxGarg/pxl/releases/latest/download/PXL.dmg) | Open it and drag **PXL** to Applications. It isn't notarized, so the first time: right-click → **Open** (on macOS 15+, **System Settings → Privacy & Security → Open Anyway**). |
+| **Windows** 10 / 11 · 64-bit | [**PXL-Setup.exe**](https://github.com/YuvrajxGarg/pxl/releases/latest/download/PXL-Setup.exe) | Run the setup. It installs PXL for your account (no admin needed) and adds it to the Start menu. If SmartScreen appears: **More info → Run anyway**. |
 
 ## What it does
 
@@ -113,7 +113,7 @@ PXL.spec              PyInstaller recipe for both platforms
    git tag v1.0.1 && git push origin v1.0.1
    ```
 
-3. The **Release** workflow tests and builds both apps and attaches `PXL-mac.zip` and `PXL-windows.zip` (each with a `.sha256`). Installed copies update themselves.
+3. The **Release** workflow tests and builds both apps and attaches the installers (`PXL.dmg`, `PXL-Setup.exe`) and the update zips (`PXL-mac.zip`, `PXL-windows.zip`, each with a `.sha256`). Installed copies update themselves.
 
 ## License
 
