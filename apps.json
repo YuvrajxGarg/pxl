@@ -115,6 +115,45 @@
           "exe": "Lut.exe"
         }
       }
+    },
+    {
+      "id": "stm",
+      "name": "Stm",
+      "mark": { "text": "stm", "glyph": "tracks" },
+      "tagline": "Split any song into vocals, drums, bass and other.",
+      "description": "Drop in songs and Stm separates them into vocals, drums, bass and other with the htdemucs model, on your Mac's Neural Engine or your PC's GPU. Keep all four, just vocals and instrumental, or pull out one stem. Runs on your computer; nothing is uploaded.",
+      "category": "Music",
+      "repo": "YuvrajxGarg/stm",
+      "site": "https://stm.pxlvzn.in",
+      "added": "2026-11-12",
+      "highlights": [
+        "Drop songs or whole folders",
+        "Vocals, drums, bass and other, or a karaoke split",
+        "Runs on the Neural Engine or your GPU",
+        "WAV, FLAC or MP3 out, originals untouched"
+      ],
+      "screenshots": [
+        "https://raw.githubusercontent.com/YuvrajxGarg/stm/main/docs/screenshot-stems.png",
+        "https://raw.githubusercontent.com/YuvrajxGarg/stm/main/docs/screenshot-songs.png"
+      ],
+      "platforms": {
+        "mac": {
+          "type": "app-zip",
+          "asset": "Stm-mac.zip",
+          "checksum": "Stm-mac.zip.sha256",
+          "bundle": "Stm.app",
+          "bundle_id": "com.yuvrajgarg.stm",
+          "min_os": "12.0",
+          "arch": "arm64"
+        },
+        "windows": {
+          "type": "folder-zip",
+          "asset": "Stm-windows.zip",
+          "checksum": "Stm-windows.zip.sha256",
+          "folder": "Stm",
+          "exe": "Stm.exe"
+        }
+      }
     }
   ]
 }
