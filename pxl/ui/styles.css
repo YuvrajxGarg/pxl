@@ -16,6 +16,15 @@
 .mark.wiped .wipe { position: absolute; left: 57%; top: -.04em; bottom: -.2em; width: .075em; margin-left: -.0375em; border-radius: .05em;
   background: var(--accent); box-shadow: 0 0 0 .045em var(--knock, var(--bg)); }
 
+/* Stm: one lime line split into four track lines (the stems). */
+.mark .bars { display: inline-block; width: .5em; margin-left: .08em; vertical-align: baseline; }
+.mark .bars b { display: block; height: .075em; border-radius: .04em; background: var(--accent); }
+.mark .bars b + b { margin-top: .0733em; }
+.mark .bars b:nth-child(1) { width: 100%; }
+.mark .bars b:nth-child(2) { width: 60%; }
+.mark .bars b:nth-child(3) { width: 85%; }
+.mark .bars b:nth-child(4) { width: 42%; }
+
 /* App tiles: the same tile as the Dwn and Tag icons, at any size. */
 .tile { --t: 56px; width: var(--t); height: var(--t); border-radius: calc(var(--t) * .245); flex: none; display: flex; align-items: center;
   justify-content: center; background: linear-gradient(#2b2b2d, #121213); border: 1px solid var(--stroke-strong);
