@@ -231,6 +231,42 @@
           "exe": "Syn.exe"
         }
       }
+    },
+    {
+      "id": "pin",
+      "name": "Pin",
+      "mark": { "text": "pin" },
+      "icon": "https://raw.githubusercontent.com/YuvrajxGarg/pin/main/docs/icon-256.png",
+      "tagline": "Your Pinterest feed, as a screensaver.",
+      "description": "A slow, drifting wall of pins from your home feed or any public board whenever your computer idles. The Pin app shows every pin the screensaver has, saves the ones you love as images and hides the ones you never want to see again.",
+      "category": "Screensaver",
+      "repo": "YuvrajxGarg/pin",
+      "site": "https://pin.pxlvzn.in",
+      "added": "2026-11-12",
+      "highlights": [
+        "A drifting masonry wall of your pins",
+        "Save pins as images",
+        "Hide pins from the screensaver for good",
+        "Home feed or any public board"
+      ],
+      "platforms": {
+        "mac": {
+          "type": "app-zip",
+          "asset": "Pin-mac.zip",
+          "checksum": "Pin-mac.zip.sha256",
+          "bundle": "Pin.app",
+          "bundle_id": "com.yuvrajgarg.pin",
+          "min_os": "11.0",
+          "arch": "arm64"
+        },
+        "windows": {
+          "type": "folder-zip",
+          "asset": "Pin-windows.zip",
+          "checksum": "Pin-windows.zip.sha256",
+          "folder": "Pin",
+          "exe": "Pin.exe"
+        }
+      }
     }
 ]
 }
