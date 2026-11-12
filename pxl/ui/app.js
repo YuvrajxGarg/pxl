@@ -42,8 +42,9 @@
     m = m || {};
     const text = esc(m.text || '');
     const glyph = m.glyph === 'strike' ? '<i class="strike"></i>' : m.glyph === 'arrow' ? ARROW :
-      m.glyph === 'pixel' ? '<span class="px solo"></span>' : '';
-    return `<span class="mark ${glyph ? '' : 'plain'}" style="--size:${size}">${text}${glyph}</span>`;
+      m.glyph === 'pixel' ? '<span class="px solo"></span>' :
+      m.glyph === 'wipe' ? `<span class="graded" aria-hidden="true">${text}</span><i class="wipe"></i>` : '';
+    return `<span class="mark ${glyph ? '' : 'plain'} ${m.glyph === 'wipe' ? 'wiped' : ''}" style="--size:${size}">${text}${glyph}</span>`;
   }
   function tile(a, cls) {
     if (a.icon) return `<div class="tile ${cls || ''}"><img src="${esc(a.icon)}" alt=""></div>`;

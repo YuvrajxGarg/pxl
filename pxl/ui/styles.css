@@ -10,6 +10,11 @@
 .mark .px.solo { background: var(--accent); }
 .mark svg.arrow { display: inline-block; width: .36em; height: .56em; fill: var(--accent); margin-left: .04em; vertical-align: baseline; }
 .mark.plain { letter-spacing: -.05em; }
+/* Lut: a before/after wipe. White left of the lime handle, graded (lime) right of it. */
+.mark.wiped .graded { position: absolute; inset: 0; color: var(--accent); pointer-events: none;
+  clip-path: inset(-.3em -.3em -.3em 57%); -webkit-clip-path: inset(-.3em -.3em -.3em 57%); }
+.mark.wiped .wipe { position: absolute; left: 57%; top: -.04em; bottom: -.2em; width: .075em; margin-left: -.0375em; border-radius: .05em;
+  background: var(--accent); box-shadow: 0 0 0 .045em var(--knock, var(--bg)); }
 
 /* App tiles: the same tile as the Dwn and Tag icons, at any size. */
 .tile { --t: 56px; width: var(--t); height: var(--t); border-radius: calc(var(--t) * .245); flex: none; display: flex; align-items: center;
