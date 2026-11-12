@@ -28,44 +28,48 @@ SAFE_URLS = ("https://github.com/", "https://raw.githubusercontent.com/", "https
 
 
 class Api(object):
+    # pywebview walks every public attribute of this object to build window.pywebview.api,
+    # recursing into objects too. Only the methods JS calls are public; everything else
+    # (the window, its native WinForms form, locks, queues) is underscored so the walk
+    # stays small and can't stall the page before it's told the API is ready.
     def __init__(self):
-        self.window = None
-        self.settings = Settings()
-        self.catalog = Catalog()
-        self.updater = Updater(self.settings, lambda st: self._emit("update", st))
-        self.jobs = {}            # app id -> {"phase", "progress", "error", "kind"}
-        self.queue = queue.Queue()
-        self.errors = {}          # app id -> last release-check error
-        self.detected = {}        # app id -> installer.find() result
-        self.refreshing = False
-        self.notified = set()
-        self.lock = threading.Lock()
+        self._window = None
+        self._settings = Settings()
+        self._catalog = Catalog()
+        self._updater = Updater(self._settings, lambda st: self._emit("update", st))
+        self._jobs = {}            # app id -> {"phase", "progress", "error", "kind"}
+        self._queue = queue.Queue()
+        self._errors = {}          # app id -> last release-check error
+        self._detected = {}        # app id -> installer.find() result
+        self._refreshing = False
+        self._notified = set()
+        self._lock = threading.Lock()
         threading.Thread(target=self._worker, daemon=True).start()
 
     # ---- plumbing ----------------------------------------------------------
     def _emit(self, event, payload):
-        if self.window:
+        if self._window:
             try:
-                self.window.evaluate_js("window.App && App.on(%s, %s)" % (json.dumps(event), json.dumps(payload)))
+                self._window.evaluate_js("window.App && App.on(%s, %s)" % (json.dumps(event), json.dumps(payload)))
             except Exception:
                 pass
 
     def _detect(self, app):
         found = installer.find(platform_spec(app))
-        self.detected[app["id"]] = found
+        self._detected[app["id"]] = found
         return found
 
     def _public(self, app, detect=False):
         spec = platform_spec(app)
-        found = self._detect(app) if detect or app["id"] not in self.detected else self.detected.get(app["id"])
-        rel = self.catalog.release(app)
+        found = self._detect(app) if detect or app["id"] not in self._detected else self._detected.get(app["id"])
+        rel = self._catalog.release(app)
         latest = rel.get("version") if rel else None
         asset_name, asset = find_asset(rel, spec.get("asset") if spec else None)
         reason = installer.compatible(spec)
         installed = bool(found)
         cur = (found or {}).get("version") or ""
         has_update = bool(installed and latest and asset and is_newer(latest, cur))
-        seen = self.settings.get("seen_apps")
+        seen = self._settings.get("seen_apps")
         status = "unavailable" if reason and not installed else "update" if has_update else "installed" if installed else "get"
         if status == "get" and not asset:
             status = "soon" if not rel else "unavailable"
@@ -80,39 +84,39 @@ class Api(object):
             "installed": installed, "installed_version": cur, "path": (found or {}).get("path"),
             "latest": latest, "notes": (rel or {}).get("notes", ""), "page": (rel or {}).get("page") or "https://github.com/%s/releases" % app["repo"],
             "published": (rel or {}).get("published"), "size": human_size(asset["size"]) if asset else "",
-            "status": status, "reason": reason, "job": self.jobs.get(app["id"]), "error": self.errors.get(app["id"]),
+            "status": status, "reason": reason, "job": self._jobs.get(app["id"]), "error": self._errors.get(app["id"]),
             "new": seen is not None and app["id"] not in seen,
         }
 
     def _emit_app(self, app_id, detect=False):
-        app = self.catalog.app(app_id)
+        app = self._catalog.app(app_id)
         if app:
             self._emit("app", self._public(app, detect=detect))
 
     # ---- called from JS ----------------------------------------------------
     def info(self):
         return {"version": __version__, "platform": sys.platform, "os": PLATFORM,
-                "settings": self.settings.public(), "update": self.updater.state(), "home": os.path.expanduser("~")}
+                "settings": self._settings.public(), "update": self._updater.state(), "home": os.path.expanduser("~")}
 
     def apps(self):
-        return [self._public(a, detect=True) for a in self.catalog.apps()]
+        return [self._public(a, detect=True) for a in self._catalog.apps()]
 
     def set_setting(self, key, value):
         if key in ("auto_check", "auto_update_apps", "auto_install", "notify_new", "welcomed", "toured"):
-            self.settings.set(key, value)
-            if key == "auto_install" and value and self.updater.phase == "available":
-                threading.Thread(target=self.updater.stage_newest, daemon=True).start()
+            self._settings.set(key, value)
+            if key == "auto_install" and value and self._updater.phase == "available":
+                threading.Thread(target=self._updater.stage_newest, daemon=True).start()
             if key == "auto_update_apps" and value:
                 threading.Thread(target=self._auto_update, daemon=True).start()
-        return self.settings.public()
+        return self._settings.public()
 
     def mark_seen(self, app_id=None):
-        seen = set(self.settings.get("seen_apps") or [])
+        seen = set(self._settings.get("seen_apps") or [])
         if app_id:
             seen.add(app_id)
         else:
-            seen.update(a["id"] for a in self.catalog.apps())
-        self.settings.set("seen_apps", sorted(seen))
+            seen.update(a["id"] for a in self._catalog.apps())
+        self._settings.set("seen_apps", sorted(seen))
         return True
 
     def refresh(self, manual=False):
@@ -120,18 +124,18 @@ class Api(object):
 
     def install(self, app_id, quit_first=False):
         """Install or update an app. Returns {"needs_quit": True} when it's open and must close first."""
-        app = self.catalog.app(app_id)
+        app = self._catalog.app(app_id)
         if not app:
             return {"ok": False}
         spec = platform_spec(app)
-        if self.detected.get(app_id) and installer.is_running(spec) and not quit_first:
+        if self._detected.get(app_id) and installer.is_running(spec) and not quit_first:
             return {"needs_quit": True, "name": app["name"]}
         self._enqueue(app_id, quit_first=quit_first)
         return {"ok": True}
 
     def update_all(self):
         n = 0
-        for a in self.catalog.apps():
+        for a in self._catalog.apps():
             pub = self._public(a)
             if pub["status"] == "update" and not pub["job"]:
                 self._enqueue(a["id"], quit_first=True)
@@ -139,19 +143,19 @@ class Api(object):
         return n
 
     def cancel(self, app_id):
-        with self.lock:
-            j = self.jobs.get(app_id)
+        with self._lock:
+            j = self._jobs.get(app_id)
             if j and j["phase"] == "queued":
-                self.jobs.pop(app_id, None)
+                self._jobs.pop(app_id, None)
         self._emit_app(app_id)
 
     def uninstall(self, app_id):
-        app = self.catalog.app(app_id)
-        if not app or self.jobs.get(app_id):
+        app = self._catalog.app(app_id)
+        if not app or self._jobs.get(app_id):
             return
         def go():
             spec = platform_spec(app)
-            self.jobs[app_id] = {"phase": "removing", "progress": 0, "kind": "remove"}
+            self._jobs[app_id] = {"phase": "removing", "progress": 0, "kind": "remove"}
             self._emit_app(app_id)
             try:
                 if installer.is_running(spec):
@@ -161,12 +165,12 @@ class Api(object):
             except Exception as e:
                 self._emit("toast", {"text": str(e), "err": True})
             finally:
-                self.jobs.pop(app_id, None)
+                self._jobs.pop(app_id, None)
                 self._emit_app(app_id, detect=True)
         threading.Thread(target=go, daemon=True).start()
 
     def open_app(self, app_id):
-        app = self.catalog.app(app_id)
+        app = self._catalog.app(app_id)
         if app:
             try:
                 installer.open_app(platform_spec(app))
@@ -174,7 +178,7 @@ class Api(object):
                 self._emit("toast", {"text": str(e), "err": True})
 
     def reveal(self, app_id):
-        app = self.catalog.app(app_id)
+        app = self._catalog.app(app_id)
         if app:
             installer.reveal(platform_spec(app))
 
@@ -186,105 +190,105 @@ class Api(object):
 
     # PXL's own updates
     def check_updates(self):
-        return self.updater.check(manual=True)
+        return self._updater.check(manual=True)
 
     def download_update(self):
-        threading.Thread(target=self.updater.stage_newest, daemon=True).start()
+        threading.Thread(target=self._updater.stage_newest, daemon=True).start()
 
     def install_update(self):
         def go():
-            if self.updater.install() == "open_page":
-                self.open_url(self.updater.state()["page"])
+            if self._updater.install() == "open_page":
+                self.open_url(self._updater.state()["page"])
         threading.Thread(target=go, daemon=True).start()
 
     # ---- background work ---------------------------------------------------
-    def start(self):
+    def _start(self):
         if getattr(self, "_started", False):
             return
         self._started = True
-        self.updater.start()
+        self._updater.start()
 
         def loop():
             time.sleep(0.8)
             self._refresh(manual=False, first=True)
             while True:
                 time.sleep(REFRESH_EVERY)
-                if self.settings.get("auto_check"):
+                if self._settings.get("auto_check"):
                     self._refresh(manual=False)
 
         threading.Thread(target=loop, daemon=True).start()
 
     def _refresh(self, manual=False, first=False):
-        if self.refreshing:
+        if self._refreshing:
             return
-        self.refreshing = True
+        self._refreshing = True
         self._emit("refreshing", {"on": True})
         try:
-            before = {a["id"] for a in self.catalog.apps()}
-            self.catalog.refresh_registry()
-            apps = self.catalog.apps()
+            before = {a["id"] for a in self._catalog.apps()}
+            self._catalog.refresh_registry()
+            apps = self._catalog.apps()
             for a in apps:
                 try:
-                    self.catalog.refresh_release(a)
-                    self.errors.pop(a["id"], None)
+                    self._catalog.refresh_release(a)
+                    self._errors.pop(a["id"], None)
                 except NetError as e:
-                    self.errors[a["id"]] = str(e)
+                    self._errors[a["id"]] = str(e)
                     log("release check %s: %s" % (a["id"], e))
             pubs = [self._public(a, detect=True) for a in apps]
             self._emit("apps", pubs)
-            self.settings.set("last_checked", time.strftime("%Y-%m-%dT%H:%M:%S"))
-            if self.settings.get("seen_apps") is not None and self.settings.get("notify_new"):
+            self._settings.set("last_checked", time.strftime("%Y-%m-%dT%H:%M:%S"))
+            if self._settings.get("seen_apps") is not None and self._settings.get("notify_new"):
                 for p in pubs:
-                    if p["new"] and p["id"] not in self.notified and (p["id"] not in before or first):
-                        self.notified.add(p["id"])
+                    if p["new"] and p["id"] not in self._notified and (p["id"] not in before or first):
+                        self._notified.add(p["id"])
                         self._emit("new_app", p)
             if manual:
                 n = sum(1 for p in pubs if p["status"] == "update")
                 self._emit("toast", {"text": "%d update%s available" % (n, "" if n == 1 else "s") if n else "Everything is up to date"})
         finally:
-            self.refreshing = False
+            self._refreshing = False
             self._emit("refreshing", {"on": False})
-        if self.settings.get("auto_update_apps"):
+        if self._settings.get("auto_update_apps"):
             self._auto_update()
 
     def _auto_update(self):
         """Quietly update installed apps that aren't open right now."""
-        for a in self.catalog.apps():
+        for a in self._catalog.apps():
             pub = self._public(a)
             if pub["status"] == "update" and not pub["job"] and not installer.is_running(platform_spec(a)):
                 self._enqueue(a["id"], quit_first=False, auto=True)
 
     def _enqueue(self, app_id, quit_first=False, auto=False):
-        with self.lock:
-            if self.jobs.get(app_id):
+        with self._lock:
+            if self._jobs.get(app_id):
                 return
-            self.jobs[app_id] = {"phase": "queued", "progress": 0, "kind": "install", "auto": auto}
+            self._jobs[app_id] = {"phase": "queued", "progress": 0, "kind": "install", "auto": auto}
         self._emit_app(app_id)
-        self.queue.put((app_id, quit_first, auto))
+        self._queue.put((app_id, quit_first, auto))
 
     def _worker(self):
         while True:
-            app_id, quit_first, auto = self.queue.get()
-            if app_id not in self.jobs:
+            app_id, quit_first, auto = self._queue.get()
+            if app_id not in self._jobs:
                 continue  # cancelled while queued
-            app = self.catalog.app(app_id)
+            app = self._catalog.app(app_id)
             try:
                 if app:
                     self._run_install(app, quit_first, auto)
             except Exception as e:
                 log("worker: %r" % e)
             finally:
-                self.jobs.pop(app_id, None)
+                self._jobs.pop(app_id, None)
                 if app:
                     self._emit_app(app_id, detect=True)
 
     def _run_install(self, app, quit_first, auto):
         app_id = app["id"]
         spec = platform_spec(app)
-        was = self.detected.get(app_id)
+        was = self._detected.get(app_id)
 
         def progress(phase, frac):
-            j = self.jobs.get(app_id)
+            j = self._jobs.get(app_id)
             if j is not None:
                 j.update(phase=phase, progress=frac)
                 self._emit("job", {"id": app_id, "job": dict(j)})
@@ -296,15 +300,15 @@ class Api(object):
                 progress("closing", 0)
                 if not installer.quit_app(spec):
                     raise installer.InstallError("%s didn't close. Quit it and try again." % app["name"])
-            rel = self.catalog.release(app)
+            rel = self._catalog.release(app)
             if not rel:
-                rel = self.catalog.refresh_release(app)
+                rel = self._catalog.refresh_release(app)
             asset_name, asset = find_asset(rel, spec.get("asset"))
             if not asset:
                 raise installer.InstallError("There's no download for this computer in %s %s." % (app["name"], rel.get("version")))
             ck_name, ck = find_asset(rel, spec.get("checksum")) if spec.get("checksum") else (None, None)
             found = installer.install(app, spec, asset["url"], ck["url"] if ck else None, rel.get("version"), progress)
-            self.detected[app_id] = found
+            self._detected[app_id] = found
             verb = "Updated" if was else "Installed"
             self._emit("installed", {"id": app_id, "name": app["name"], "version": found.get("version"), "verb": verb, "auto": auto})
         except (installer.InstallError, NetError) as e:
@@ -363,7 +367,7 @@ def main():
         "PXL", url=os.path.join(UI_DIR, "index.html"), js_api=api,
         width=1180, height=760, min_size=(920, 600), background_color=BG, easy_drag=False,
     )
-    api.window = window
+    api._window = window
 
     def quit_for_install():
         try:
@@ -371,9 +375,9 @@ def main():
         finally:
             threading.Timer(3.0, lambda: os._exit(0)).start()
 
-    api.updater.on_quit_for_install = quit_for_install
-    window.events.closing += lambda: api.updater.install_on_quit()
-    window.events.loaded += lambda: api.start()
+    api._updater.on_quit_for_install = quit_for_install
+    window.events.closing += lambda: api._updater.install_on_quit()
+    window.events.loaded += lambda: api._start()
 
     if sys.platform == "darwin":
         window.events.before_show += lambda: _style_mac(window)

@@ -814,6 +814,31 @@
       if (q.get('detail')) setTimeout(() => openDetail(q.get('detail')), 50);
     });
   }
-  else if (window.pywebview && window.pywebview.api) start(window.pywebview.api);
-  else window.addEventListener('pywebviewready', () => start(window.pywebview.api));
+  // Never leave the window stuck on the splash. If startup throws, or the Python side never
+  // answers, show the app anyway and say what went wrong.
+  else {
+    let started = false;
+    const reveal = (msg) => {
+      const s = $('#splash');
+      if (!s || s.classList.contains('out')) return;
+      s.classList.add('out'); $('#app').classList.add('in');
+      setTimeout(() => { const x = $('#splash'); if (x) x.remove(); }, 600);
+      if (msg) {
+        $('#check-line').textContent = msg;
+        toast(msg, true);
+      }
+    };
+    const boot = () => {
+      const a = window.pywebview && window.pywebview.api;
+      if (started || !a || typeof a.info !== 'function') return;
+      started = true;
+      start(a).catch((e) => reveal("PXL couldn't start: " + ((e && e.message) || e)));
+    };
+    window.addEventListener('pywebviewready', boot);
+    boot();
+    setTimeout(() => {
+      if (!started) reveal("PXL's engine didn't answer. Quit PXL and open it again.");
+      else reveal("PXL is taking longer than usual to load your apps.");
+    }, 15000);
+  }
 })();

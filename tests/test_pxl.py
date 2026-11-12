@@ -114,3 +114,23 @@ class FolderZip(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+
+class JsApiTest(unittest.TestCase):
+    def test_exposes_only_methods(self):
+        """pywebview walks every public attribute of the js_api object. A public attribute holding the
+        window sent it into the WinForms form's endless .NET object graph on Windows, freezing PXL on its splash."""
+        import inspect
+        import types
+
+        try:
+            import webview  # noqa: F401
+        except Exception:
+            sys.modules["webview"] = types.SimpleNamespace(settings={})
+        from pxl.webapp import Api
+
+        api = Api()
+        public = {n: getattr(api, n) for n in dir(api) if not n.startswith("_")}
+        self.assertTrue(public)
+        self.assertEqual([n for n, v in public.items() if not inspect.ismethod(v)], [])
