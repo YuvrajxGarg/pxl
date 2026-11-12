@@ -115,6 +115,45 @@
           "exe": "Lut.exe"
         }
       }
+    },
+    {
+      "id": "hop",
+      "name": "Hop",
+      "mark": { "text": "hop", "glyph": "go" },
+      "tagline": "Send files between your Mac, PC and phone. No cloud.",
+      "description": "Like AirDrop for every device you own: files and whole folders go straight across your Wi-Fi, end-to-end encrypted, any size, and pick up where they stopped if the connection drops. Phones just scan a QR code, nothing to install.",
+      "category": "Transfer",
+      "repo": "YuvrajxGarg/hop",
+      "site": "https://hop.pxlvzn.in",
+      "added": "2026-11-12",
+      "highlights": [
+        "Mac, Windows and any phone's browser",
+        "Pair once with a 6-digit code",
+        "End-to-end encrypted, any file size",
+        "Resumes if the Wi-Fi drops"
+      ],
+      "screenshots": [
+        "https://raw.githubusercontent.com/YuvrajxGarg/hop/main/docs/screenshot-send.png",
+        "https://raw.githubusercontent.com/YuvrajxGarg/hop/main/docs/screenshot-receive.png"
+      ],
+      "platforms": {
+        "mac": {
+          "type": "app-zip",
+          "asset": "Hop-mac.zip",
+          "checksum": "Hop-mac.zip.sha256",
+          "bundle": "Hop.app",
+          "bundle_id": "com.yuvrajgarg.hop",
+          "min_os": "11.0",
+          "arch": "arm64"
+        },
+        "windows": {
+          "type": "folder-zip",
+          "asset": "Hop-windows.zip",
+          "checksum": "Hop-windows.zip.sha256",
+          "folder": "Hop",
+          "exe": "Hop.exe"
+        }
+      }
     }
   ]
 }

@@ -8,6 +8,7 @@
 .mark .px i:nth-child(3) { left: 0; bottom: 0; }
 .mark .px i:nth-child(4) { right: 0; bottom: 0; }
 .mark .px.solo { background: var(--accent); }
+.mark svg.go { display: inline-block; width: .46em; height: .46em; fill: var(--accent); margin-left: .04em; vertical-align: baseline; }
 .mark svg.arrow { display: inline-block; width: .36em; height: .56em; fill: var(--accent); margin-left: .04em; vertical-align: baseline; }
 .mark.plain { letter-spacing: -.05em; }
 /* Lut: a before/after wipe. White left of the lime handle, graded (lime) right of it. */
