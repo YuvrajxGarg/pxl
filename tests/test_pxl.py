@@ -160,6 +160,7 @@ class WindowsSwapScriptTest(unittest.TestCase):
         self.assertTrue(raw.startswith(b"\xef\xbb\xbf"))           # Windows PowerShell needs the BOM for non-ASCII paths
         self.assertEqual(calls[0]["cwd"], work)                     # not inside the app folder, which would lock it
         self.assertIn("Set-Location -LiteralPath $env:TEMP", text)
+        self.assertIn("SetCurrentDirectory($env:TEMP)", text)   # Set-Location alone left the folder locked (tested on Windows)
         self.assertIn("Stop-Process", text)                         # a hung or crashed app can't stall the swap forever
         self.assertIn("-ErrorAction Stop", text)                    # a failed move is caught and retried
         self.assertIn("Start-Process -FilePath $exe -WorkingDirectory $target", text)
