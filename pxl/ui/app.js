@@ -38,10 +38,11 @@
 
   // ---------- marks & tiles ----------
   const ARROW = '<svg class="arrow" viewBox="0 0 36 56"><path d="M11.9 25.8V6.1A6.1 6.1 0 0 1 24.1 6.1V25.8H36L18 56 0 25.8Z"/></svg>';
+  const GO = '<svg class="go" viewBox="2.46 -2.46 100 100"><path transform="rotate(45 50 50)" d="M33 46V83A17 17 0 0 0 67 83V46H98L50 -14L2 46Z"/></svg>';
   function markHTML(m, size) {
     m = m || {};
     const text = esc(m.text || '');
-    const glyph = m.glyph === 'strike' ? '<i class="strike"></i>' : m.glyph === 'arrow' ? ARROW :
+    const glyph = m.glyph === 'strike' ? '<i class="strike"></i>' : m.glyph === 'arrow' ? ARROW : m.glyph === 'go' ? GO :
       m.glyph === 'pixel' ? '<span class="px solo"></span>' :
       m.glyph === 'wipe' ? `<span class="graded" aria-hidden="true">${text}</span><i class="wipe"></i>` :
       m.glyph === 'tracks' ? '<i class="bars"><b></b><b></b><b></b><b></b></i>' : '';
