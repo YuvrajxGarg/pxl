@@ -77,6 +77,44 @@
           "exe": "Tag.exe"
         }
       }
+    },
+    {
+      "id": "lut",
+      "name": "Lut",
+      "mark": { "text": "lut", "glyph": "pixel" },
+      "tagline": "Match the colour of one shot to another.",
+      "description": "Drop a reference with the look you want and the clips to grade. Lut matches white balance, saturation and contrast, then hands you a .cube LUT for Resolve, Premiere or Final Cut plus a graded copy. Runs on your computer; originals are never touched.",
+      "category": "Photo & video",
+      "repo": "YuvrajxGarg/lut",
+      "site": "https://lut.pxlvzn.in",
+      "added": "2026-11-12",
+      "highlights": [
+        "Drop a reference, then your clips",
+        "Live before and after for every clip",
+        "A real 33-point .cube LUT for any editor",
+        "Graded copies in H.264, HEVC or ProRes"
+      ],
+      "screenshots": [
+        "https://raw.githubusercontent.com/YuvrajxGarg/lut/main/docs/screenshot.png"
+      ],
+      "platforms": {
+        "mac": {
+          "type": "app-zip",
+          "asset": "Lut-mac.zip",
+          "checksum": "Lut-mac.zip.sha256",
+          "bundle": "Lut.app",
+          "bundle_id": "com.yuvrajgarg.lut",
+          "min_os": "11.0",
+          "arch": "arm64"
+        },
+        "windows": {
+          "type": "folder-zip",
+          "asset": "Lut-windows.zip",
+          "checksum": "Lut-windows.zip.sha256",
+          "folder": "Lut",
+          "exe": "Lut.exe"
+        }
+      }
     }
   ]
 }
