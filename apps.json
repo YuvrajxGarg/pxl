@@ -193,6 +193,44 @@
           "exe": "Hop.exe"
         }
       }
+    },
+    {
+      "id": "syn",
+      "name": "Syn",
+      "mark": { "text": "syn", "glyph": "sync" },
+      "tagline": "Sync every camera and recorder by sound.",
+      "description": "Drop a Premiere XML or the footage itself and SYN lines every clip up by its sound, with a confidence score on each one. Send the synced sequence straight back to Premiere Pro with the SYN panel. Built for 20 cameras and 20 recorders.",
+      "category": "Video",
+      "repo": "YuvrajxGarg/syn",
+      "site": "https://syn.pxlvzn.in",
+      "added": "2026-11-12",
+      "highlights": [
+        "Premiere XML in, synced sequence out",
+        "A confidence score on every clip",
+        "Premiere Pro panel included",
+        "Flags recorders with clock drift"
+      ],
+      "screenshots": [
+        "https://raw.githubusercontent.com/YuvrajxGarg/syn/main/docs/screenshot.png"
+      ],
+      "platforms": {
+        "mac": {
+          "type": "app-zip",
+          "asset": "Syn-mac.zip",
+          "checksum": "Syn-mac.zip.sha256",
+          "bundle": "Syn.app",
+          "bundle_id": "com.yuvrajgarg.syn",
+          "min_os": "11.0",
+          "arch": "arm64"
+        },
+        "windows": {
+          "type": "folder-zip",
+          "asset": "Syn-windows.zip",
+          "checksum": "Syn-windows.zip.sha256",
+          "folder": "Syn",
+          "exe": "Syn.exe"
+        }
+      }
     }
-  ]
+]
 }
