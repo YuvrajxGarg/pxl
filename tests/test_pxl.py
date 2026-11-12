@@ -134,3 +134,33 @@ class JsApiTest(unittest.TestCase):
         public = {n: getattr(api, n) for n in dir(api) if not n.startswith("_")}
         self.assertTrue(public)
         self.assertEqual([n for n, v in public.items() if not inspect.ismethod(v)], [])
+
+
+class WindowsSwapScriptTest(unittest.TestCase):
+    """The PowerShell script that swaps in an update on Windows and reopens PXL."""
+
+    def test_script(self):
+        from unittest import mock
+        from pxl import updater as u
+        from pxl.settings import Settings
+
+        work = tempfile.mkdtemp()
+        up = u.Updater(Settings(os.path.join(work, "s.json")), lambda s: None)
+        calls = []
+        with mock.patch.object(u, "installed_location", lambda: r"C:\Apps\PXL"), \
+                mock.patch.object(u.sys, "platform", "win32"), \
+                mock.patch.object(u.os, "access", lambda *a: True), \
+                mock.patch.object(u.tempfile, "gettempdir", lambda: work), \
+                mock.patch.object(u.subprocess, "Popen", lambda *a, **k: calls.append(k)):
+            up._launch_swap(relaunch=True)
+        script = [n for n in os.listdir(work) if n.endswith(".ps1")][0]
+        with open(os.path.join(work, script), "rb") as f:
+            raw = f.read()
+        text = raw.decode("utf-8-sig")
+        self.assertTrue(raw.startswith(b"\xef\xbb\xbf"))           # Windows PowerShell needs the BOM for non-ASCII paths
+        self.assertEqual(calls[0]["cwd"], work)                     # not inside the app folder, which would lock it
+        self.assertIn("Set-Location -LiteralPath $env:TEMP", text)
+        self.assertIn("SetCurrentDirectory($env:TEMP)", text)   # Set-Location alone left the folder locked (tested on Windows)
+        self.assertIn("Stop-Process", text)                         # a hung or crashed app can't stall the swap forever
+        self.assertIn("-ErrorAction Stop", text)                    # a failed move is caught and retried
+        self.assertIn("Start-Process -FilePath $exe -WorkingDirectory $target", text)
