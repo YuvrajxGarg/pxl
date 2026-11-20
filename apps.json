@@ -267,6 +267,45 @@
           "exe": "Pin.exe"
         }
       }
+    },
+    {
+      "id": "dsk",
+      "name": "Dsk",
+      "mark": { "text": "dsk" },
+      "icon": "https://raw.githubusercontent.com/YuvrajxGarg/dsk/main/docs/icon-256.png",
+      "tagline": "See what's filling your disk and clear what's safe.",
+      "description": "A live map of your Mac or PC's storage by category, with everything sorted into safe to clear, look first and leave alone. Ask Claude for a second opinion with your own key. Removed files go to the Trash, and WizTree makes Windows scans fast.",
+      "category": "Utilities",
+      "repo": "YuvrajxGarg/dsk",
+      "site": "https://dsk.pxlvzn.in",
+      "added": "2026-11-20",
+      "highlights": [
+        "See what's using your disk, by category",
+        "Safe, look first and leave alone, explained",
+        "Large files you forgot about",
+        "Everything goes to the Trash first"
+      ],
+      "screenshots": [
+        "https://raw.githubusercontent.com/YuvrajxGarg/dsk/main/docs/screenshot.png"
+      ],
+      "platforms": {
+        "mac": {
+          "type": "app-zip",
+          "asset": "Dsk-mac.zip",
+          "checksum": "Dsk-mac.zip.sha256",
+          "bundle": "Dsk.app",
+          "bundle_id": "com.yuvrajgarg.dsk",
+          "min_os": "11.0",
+          "arch": "arm64"
+        },
+        "windows": {
+          "type": "folder-zip",
+          "asset": "Dsk-windows.zip",
+          "checksum": "Dsk-windows.zip.sha256",
+          "folder": "Dsk",
+          "exe": "Dsk.exe"
+        }
+      }
     }
-]
+  ]
 }
