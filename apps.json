@@ -306,45 +306,6 @@
           "exe": "Dsk.exe"
         }
       }
-    },
-    {
-      "id": "kvm",
-      "name": "Kvm",
-      "mark": { "text": "kvm" },
-      "icon": "https://raw.githubusercontent.com/YuvrajxGarg/kvm/main/docs/icon-256.png",
-      "tagline": "One keyboard and mouse for your Mac and PC.",
-      "description": "Push the pointer off the edge of one screen and it carries on onto the other computer, keyboard and all, even on Windows admin prompts and the sign-in screen. Shared clipboard with pictures, and files both ways. Encrypted, direct, no account.",
-      "category": "Utilities",
-      "repo": "YuvrajxGarg/kvm",
-      "site": "https://kvm.pxlvzn.in",
-      "added": "2026-11-22",
-      "highlights": [
-        "Mac and PC share one keyboard and mouse",
-        "Works on admin prompts and the sign-in screen",
-        "Copy on one, paste on the other",
-        "Send files and folders both ways"
-      ],
-      "screenshots": [
-        "https://raw.githubusercontent.com/YuvrajxGarg/kvm/main/docs/screenshot.png"
-      ],
-      "platforms": {
-        "mac": {
-          "type": "app-zip",
-          "asset": "Kvm-mac.zip",
-          "checksum": "Kvm-mac.zip.sha256",
-          "bundle": "Kvm.app",
-          "bundle_id": "com.yuvrajgarg.kvm",
-          "min_os": "11.0",
-          "arch": "arm64"
-        },
-        "windows": {
-          "type": "folder-zip",
-          "asset": "Kvm-windows.zip",
-          "checksum": "Kvm-windows.zip.sha256",
-          "folder": "Kvm",
-          "exe": "Kvm.exe"
-        }
-      }
     }
   ]
 }
